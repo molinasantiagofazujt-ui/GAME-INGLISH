@@ -1,11 +1,413 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verb Quest: Past</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: #101b31;
+      --panel-2: #162542;
+      --text: #f8fafc;
+      --accent: #7dd3fc;
+      --accent-2: #f59e0b;
+      --correct: #4ade80;
+      --wrong: #fb7185;
+      --muted: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e3a8a, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .game {
+      width: min(100%, 760px);
+      background: rgba(16, 27, 49, 0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--panel-2), #243b68);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(125, 211, 252, 0.25);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.18);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .instructions h3, .status h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    .instructions ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      background: rgba(125, 211, 252, 0.12);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .question-card {
+      background: linear-gradient(135deg, #17233f, #13213d);
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .label {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.78rem;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .verb {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+      color: white;
+    }
+
+    .hint {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #475569;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      background: #07111f;
+      color: var(--text);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .primary { background: var(--accent); color: #082f49; }
+    .secondary { background: #334155; color: var(--text); }
+
+    .feedback {
+      min-height: 24px;
+      margin-top: 12px;
+      font-weight: 700;
+    }
+
+    .feedback.correct { color: var(--correct); }
+    .feedback.wrong { color: var(--wrong); }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #1f2937;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.3s ease;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 600px) {
+      .game { padding: 16px; }
+      .status-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
 </head>
 <body>
-    
+  <main class="game">
+    <section class="hero">
+      <div class="badge">Escape Room • Past Simple</div>
+      <h1>Verb Quest: Past</h1>
+      <p class="subtitle">Has entrado a la biblioteca del tiempo. Para abrir la puerta final debes resolver 10 misiones con verbos en past simple.</p>
+    </section>
+
+    <section class="panel instructions">
+      <h3>Instrucciones</h3>
+      <ul>
+        <li>Lee el verbo base y escribe su forma correcta en past simple.</li>
+        <li>Hay verbos regulares y verbos irregulares.</li>
+        <li>Si aciertas, avanzarás en la misión. Si fallas, recibirás retroalimentación.</li>
+        <li>Completa las 10 preguntas para escapar.</li>
+      </ul>
+    </section>
+
+    <section class="panel status">
+      <h3>Estado de la misión</h3>
+      <div class="status-grid">
+        <div class="stat"><strong id="progressText">Pregunta 1 de 10</strong><span>Progreso</span></div>
+        <div class="stat"><strong id="scoreText">0/10</strong><span>Aciertos</span></div>
+        <div class="stat"><strong id="roomText">Sala 1</strong><span>Estado</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </section>
+
+    <section class="question-card">
+      <p class="label" id="typeLabel">Verbo regular</p>
+      <h2 class="verb" id="verbText">play</h2>
+      <p class="hint" id="hintText">Añade -ed</p>
+      <input id="answerInput" type="text" placeholder="Escribe la respuesta en pasado simple" autocomplete="off" />
+      <div class="actions">
+        <button class="primary" id="checkBtn">Responder</button>
+        <button class="secondary hidden" id="nextBtn">Siguiente misión</button>
+      </div>
+      <div class="feedback" id="feedbackText"></div>
+    </section>
+
+    <div class="actions">
+      <button class="secondary" id="restartBtn">Reiniciar juego</button>
+    </div>
+  </main>
+
+  <script>
+    const questions = [
+      { verb: 'play', answer: 'played', type: 'regular' },
+      { verb: 'visit', answer: 'visited', type: 'regular' },
+      { verb: 'watch', answer: 'watched', type: 'regular' },
+      { verb: 'study', answer: 'studied', type: 'regular' },
+      { verb: 'go', answer: 'went', type: 'irregular' },
+      { verb: 'eat', answer: 'ate', type: 'irregular' },
+      { verb: 'see', answer: 'saw', type: 'irregular' },
+      { verb: 'have', answer: 'had', type: 'irregular' },
+      { verb: 'make', answer: 'made', type: 'irregular' },
+      { verb: 'do', answer: 'did', type: 'irregular' }
+    ];
+
+    const verbText = document.getElementById('verbText');
+    const typeLabel = document.getElementById('typeLabel');
+    const hintText = document.getElementById('hintText');
+    const answerInput = document.getElementById('answerInput');
+    const feedbackText = document.getElementById('feedbackText');
+    const progressText = document.getElementById('progressText');
+    const scoreText = document.getElementById('scoreText');
+    const roomText = document.getElementById('roomText');
+    const progressFill = document.getElementById('progressFill');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let quizQuestions = [];
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startGame() {
+      quizQuestions = shuffle(questions).slice(0, 10);
+      currentIndex = 0;
+      score = 0;
+      answered = false;
+      feedbackText.textContent = '';
+      feedbackText.className = 'feedback';
+      answerInput.value = '';
+      answerInput.disabled = false;
+      checkBtn.classList.remove('hidden');
+      nextBtn.classList.add('hidden');
+      showQuestion();
+      updateStats();
+      answerInput.focus();
+    }
+
+    function showQuestion() {
+      const q = quizQuestions[currentIndex];
+      verbText.textContent = q.verb;
+      typeLabel.textContent = q.type === 'regular' ? 'Verbo regular' : 'Verbo irregular';
+      hintText.textContent = q.type === 'regular' ? 'Añade -ed' : 'Recuerda la forma irregular';
+      feedbackText.textContent = '';
+      feedbackText.className = 'feedback';
+      answerInput.value = '';
+      answerInput.disabled = false;
+      checkBtn.classList.remove('hidden');
+      nextBtn.classList.add('hidden');
+      answered = false;
+      answerInput.focus();
+    }
+
+    function updateStats() {
+      const questionNumber = Math.min(currentIndex + 1, quizQuestions.length);
+      progressText.textContent = `Pregunta ${questionNumber} de ${quizQuestions.length}`;
+      scoreText.textContent = `${score}/${quizQuestions.length}`;
+      roomText.textContent = `Sala ${questionNumber}`;
+      progressFill.style.width = `${(questionNumber / quizQuestions.length) * 100}%`;
+    }
+
+    function checkAnswer() {
+      if (answered) return;
+
+      const q = quizQuestions[currentIndex];
+      const userAnswer = answerInput.value.trim().toLowerCase();
+
+      if (!userAnswer) {
+        feedbackText.textContent = 'Escribe una respuesta antes de continuar.';
+        feedbackText.className = 'feedback wrong';
+        return;
+      }
+
+      if (userAnswer === q.answer) {
+        score += 1;
+        feedbackText.textContent = '✅ Correcto. La puerta avanza.';
+        feedbackText.className = 'feedback correct';
+      } else {
+        feedbackText.textContent = `❌ Incorrecto. La respuesta correcta era: ${q.answer}`;
+        feedbackText.className = 'feedback wrong';
+      }
+
+      answered = true;
+      answerInput.disabled = true;
+      checkBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+      updateStats();
+    }
+
+    function nextQuestion() {
+      if (currentIndex < quizQuestions.length - 1) {
+        currentIndex += 1;
+        showQuestion();
+      } else {
+        finishGame();
+      }
+    }
+
+    function finishGame() {
+      let message = '';
+      if (score >= 8) {
+        message = '¡Excelente! Has escapado del tiempo.';
+      } else if (score >= 5) {
+        message = '¡Buen trabajo! Ya casi abres la puerta.';
+      } else {
+        message = 'Sigue practicando y vuelve a intentarlo.';
+      }
+
+      verbText.textContent = '¡Escapaste!';
+      typeLabel.textContent = 'Resultado final';
+      hintText.textContent = message;
+      feedbackText.textContent = `Lograste ${score} de ${quizQuestions.length} aciertos.`;
+      feedbackText.className = 'feedback correct';
+      progressText.textContent = 'Juego terminado';
+      scoreText.textContent = `${score}/${quizQuestions.length}`;
+      roomText.textContent = 'Puerta abierta';
+      progressFill.style.width = '100%';
+      checkBtn.classList.add('hidden');
+      nextBtn.classList.add('hidden');
+      answerInput.value = '';
+      answerInput.disabled = true;
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', startGame);
+    answerInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        if (!answered) {
+          checkAnswer();
+        } else {
+          nextQuestion();
+        }
+      }
+    });
+
+    startGame();
+  </script>
 </body>
 </html>
