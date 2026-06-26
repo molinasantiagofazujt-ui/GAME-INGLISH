@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -173,6 +173,12 @@
     .primary { background: var(--accent); color: #082f49; }
     .secondary { background: #334155; color: var(--text); }
 
+    .audio-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
     .feedback {
       min-height: 24px;
       margin-top: 12px;
@@ -212,45 +218,53 @@
     <section class="hero">
       <div class="badge">Escape Room • Past Simple</div>
       <h1>Verb Quest: Past</h1>
-      <p class="subtitle">Has entrado a la biblioteca del tiempo. Para abrir la puerta final debes resolver 10 misiones con verbos en past simple.</p>
+      <p class="subtitle">You have entered the library of time. To open the final door, you must complete 10 missions with verbs in the past simple.</p>
     </section>
 
     <section class="panel instructions">
-      <h3>Instrucciones</h3>
+      <h3>Instructions</h3>
       <ul>
-        <li>Lee el verbo base y escribe su forma correcta en past simple.</li>
-        <li>Hay verbos regulares y verbos irregulares.</li>
-        <li>Si aciertas, avanzarás en la misión. Si fallas, recibirás retroalimentación.</li>
-        <li>Completa las 10 preguntas para escapar.</li>
+        <li>Read the base verb and write its correct form in the past simple.</li>
+        <li>There are regular and irregular verbs.</li>
+        <li>If you answer correctly, you advance in the mission. If you miss, you will receive feedback.</li>
+        <li>Complete all 10 questions to escape.</li>
       </ul>
     </section>
 
     <section class="panel status">
-      <h3>Estado de la misión</h3>
+      <h3>Mission status</h3>
       <div class="status-grid">
-        <div class="stat"><strong id="progressText">Pregunta 1 de 10</strong><span>Progreso</span></div>
-        <div class="stat"><strong id="scoreText">0/10</strong><span>Aciertos</span></div>
-        <div class="stat"><strong id="roomText">Sala 1</strong><span>Estado</span></div>
+        <div class="stat"><strong id="progressText">Question 1 of 10</strong><span>Progress</span></div>
+        <div class="stat"><strong id="scoreText">0/10</strong><span>Correct answers</span></div>
+        <div class="stat"><strong id="roomText">Room 1</strong><span>Status</span></div>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </section>
 
     <section class="question-card">
-      <p class="label" id="typeLabel">Verbo regular</p>
+      <p class="label" id="typeLabel">Regular verb</p>
       <h2 class="verb" id="verbText">play</h2>
-      <p class="hint" id="hintText">Añade -ed</p>
-      <input id="answerInput" type="text" placeholder="Escribe la respuesta en pasado simple" autocomplete="off" />
+      <p class="hint" id="hintText">Add -ed</p>
+      <input id="answerInput" type="text" placeholder="Write the past simple answer" autocomplete="off" />
       <div class="actions">
-        <button class="primary" id="checkBtn">Responder</button>
-        <button class="secondary hidden" id="nextBtn">Siguiente misión</button>
+        <button class="primary" id="checkBtn">Answer</button>
+        <button class="secondary hidden" id="nextBtn">Next mission</button>
       </div>
       <div class="feedback" id="feedbackText"></div>
     </section>
 
     <div class="actions">
-      <button class="secondary" id="restartBtn">Reiniciar juego</button>
+      <button class="secondary" id="restartBtn">Restart game</button>
+    </div>
+
+    <div class="audio-controls">
+      <button class="secondary" id="musicBtn" type="button">Play ambient music</button>
     </div>
   </main>
+
+  <audio id="ambientAudio" loop preload="auto">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+  </audio>
 
   <script>
     const questions = [
@@ -278,6 +292,8 @@
     const checkBtn = document.getElementById('checkBtn');
     const nextBtn = document.getElementById('nextBtn');
     const restartBtn = document.getElementById('restartBtn');
+    const musicBtn = document.getElementById('musicBtn');
+    const ambientAudio = document.getElementById('ambientAudio');
 
     let currentIndex = 0;
     let score = 0;
@@ -312,8 +328,8 @@
     function showQuestion() {
       const q = quizQuestions[currentIndex];
       verbText.textContent = q.verb;
-      typeLabel.textContent = q.type === 'regular' ? 'Verbo regular' : 'Verbo irregular';
-      hintText.textContent = q.type === 'regular' ? 'Añade -ed' : 'Recuerda la forma irregular';
+      typeLabel.textContent = q.type === 'regular' ? 'Regular verb' : 'Irregular verb';
+      hintText.textContent = q.type === 'regular' ? 'Add -ed' : 'Remember the irregular form';
       feedbackText.textContent = '';
       feedbackText.className = 'feedback';
       answerInput.value = '';
@@ -326,9 +342,9 @@
 
     function updateStats() {
       const questionNumber = Math.min(currentIndex + 1, quizQuestions.length);
-      progressText.textContent = `Pregunta ${questionNumber} de ${quizQuestions.length}`;
+      progressText.textContent = `Question ${questionNumber} of ${quizQuestions.length}`;
       scoreText.textContent = `${score}/${quizQuestions.length}`;
-      roomText.textContent = `Sala ${questionNumber}`;
+      roomText.textContent = `Room ${questionNumber}`;
       progressFill.style.width = `${(questionNumber / quizQuestions.length) * 100}%`;
     }
 
@@ -339,17 +355,17 @@
       const userAnswer = answerInput.value.trim().toLowerCase();
 
       if (!userAnswer) {
-        feedbackText.textContent = 'Escribe una respuesta antes de continuar.';
+        feedbackText.textContent = 'Write an answer before continuing.';
         feedbackText.className = 'feedback wrong';
         return;
       }
 
       if (userAnswer === q.answer) {
         score += 1;
-        feedbackText.textContent = '✅ Correcto. La puerta avanza.';
+        feedbackText.textContent = '✅ Correct. The door opens.';
         feedbackText.className = 'feedback correct';
       } else {
-        feedbackText.textContent = `❌ Incorrecto. La respuesta correcta era: ${q.answer}`;
+        feedbackText.textContent = `❌ Incorrect. The correct answer was: ${q.answer}`;
         feedbackText.className = 'feedback wrong';
       }
 
@@ -372,21 +388,21 @@
     function finishGame() {
       let message = '';
       if (score >= 8) {
-        message = '¡Excelente! Has escapado del tiempo.';
+        message = 'Excellent! You escaped time.';
       } else if (score >= 5) {
-        message = '¡Buen trabajo! Ya casi abres la puerta.';
+        message = 'Great job! You are almost opening the door.';
       } else {
-        message = 'Sigue practicando y vuelve a intentarlo.';
+        message = 'Keep practicing and try again.';
       }
 
-      verbText.textContent = '¡Escapaste!';
-      typeLabel.textContent = 'Resultado final';
+      verbText.textContent = 'You escaped!';
+      typeLabel.textContent = 'Final result';
       hintText.textContent = message;
-      feedbackText.textContent = `Lograste ${score} de ${quizQuestions.length} aciertos.`;
+      feedbackText.textContent = `You got ${score} out of ${quizQuestions.length} correct.`;
       feedbackText.className = 'feedback correct';
-      progressText.textContent = 'Juego terminado';
+      progressText.textContent = 'Game finished';
       scoreText.textContent = `${score}/${quizQuestions.length}`;
-      roomText.textContent = 'Puerta abierta';
+      roomText.textContent = 'Door open';
       progressFill.style.width = '100%';
       checkBtn.classList.add('hidden');
       nextBtn.classList.add('hidden');
@@ -394,9 +410,22 @@
       answerInput.disabled = true;
     }
 
+    function toggleMusic() {
+      if (ambientAudio.paused) {
+        ambientAudio.play().catch(() => {
+          musicBtn.textContent = 'Music blocked by browser';
+        });
+        musicBtn.textContent = 'Pause ambient music';
+      } else {
+        ambientAudio.pause();
+        musicBtn.textContent = 'Play ambient music';
+      }
+    }
+
     checkBtn.addEventListener('click', checkAnswer);
     nextBtn.addEventListener('click', nextQuestion);
     restartBtn.addEventListener('click', startGame);
+    musicBtn.addEventListener('click', toggleMusic);
     answerInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         if (!answered) {
