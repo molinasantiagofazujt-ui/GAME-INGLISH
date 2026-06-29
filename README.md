@@ -1,2 +1,5 @@
 # GAME-INGLISH
-juego de ingles pasado simple
+
+Past simple English game
+
+This repository contains a small web game to practice past simple verbs in English.
