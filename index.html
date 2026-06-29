@@ -227,9 +227,7 @@
         <li>Read the base verb and write its correct form in the past simple.</li>
         <li>There are regular and irregular verbs.</li>
         <li>If you answer correctly, you advance in the mission. If you miss, you will receive feedback.</li>
-        <li>Complete all 10 questions to escape.</li>
-      </ul>
-    </section>
+      <li>You need at least 8 correct answers to win. 7 or fewer means you lose.</li>
 
     <section class="panel status">
       <h3>Mission status</h3>
@@ -387,22 +385,22 @@
 
     function finishGame() {
       let message = '';
+      let resultClass = 'correct';
       if (score >= 8) {
-        message = 'Excellent! You escaped time.';
-      } else if (score >= 5) {
-        message = 'Great job! You are almost opening the door.';
+        message = 'Excellent! You escaped time with 8 or more correct answers.';
       } else {
-        message = 'Keep practicing and try again.';
+        message = 'You lost. Only 8 correct answers allow escape.';
+        resultClass = 'wrong';
       }
 
-      verbText.textContent = 'You escaped!';
+      verbText.textContent = score >= 8 ? 'You escaped!' : 'You failed';
       typeLabel.textContent = 'Final result';
       hintText.textContent = message;
       feedbackText.textContent = `You got ${score} out of ${quizQuestions.length} correct.`;
-      feedbackText.className = 'feedback correct';
+      feedbackText.className = `feedback ${resultClass}`;
       progressText.textContent = 'Game finished';
       scoreText.textContent = `${score}/${quizQuestions.length}`;
-      roomText.textContent = 'Door open';
+      roomText.textContent = score >= 8 ? 'Door open' : 'Door closed';
       progressFill.style.width = '100%';
       checkBtn.classList.add('hidden');
       nextBtn.classList.add('hidden');
